@@ -174,10 +174,11 @@ const AuthPage = () => {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>Email</FormLabel>
                           <FormControl>
                             <Input 
-                              placeholder="johndoe" 
+                              type="email" 
+                              placeholder="johndoe@example.com" 
                               {...field}
                             />
                           </FormControl>
