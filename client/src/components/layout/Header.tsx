@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
+import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -9,6 +10,7 @@ import {
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   const navItems = [
     { label: 'Home', href: '/' },
@@ -38,11 +40,17 @@ const Header = () => {
               </Link>
             ))}
           </div>
-          <Link href="/auth">
-            <Button className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
-              Sign In
-            </Button>
-          </Link>
+          {user ? (
+            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
+              {user.username.charAt(0).toUpperCase()}
+            </div>
+          ) : (
+            <Link href="/auth">
+              <Button className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
+                Sign In
+              </Button>
+            </Link>
+          )}
           
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
