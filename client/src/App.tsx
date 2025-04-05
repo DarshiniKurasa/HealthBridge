@@ -14,34 +14,21 @@ import Footer from "@/components/layout/Footer";
 import CommunityForum from "@/components/CommunityForum";
 import VolunteerForm from "@/components/VolunteerForm";
 import ServicesPage from "@/pages/ServicesPage";
-import AuthPage from "@/pages/auth-page";
 import EmergencyPage from "@/pages/EmergencyPage";
-import { AuthProvider } from "@/hooks/use-auth";
-import { ProtectedRoute } from "@/lib/protected-route";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/auth" component={AuthPage} />
-      <ProtectedRoute path="/telemedicine" component={TelemedicinePage} />
-      <ProtectedRoute path="/symptom-checker" component={SymptomCheckerPage} />
-      <ProtectedRoute path="/mental-health" component={MentalHealthPage} />
-      <ProtectedRoute path="/reminders" component={MedicationReminderPage} />
-      <ProtectedRoute path="/locator" component={HealthcareLocatorPage} />
+      <Route path="/telemedicine" component={TelemedicinePage} />
+      <Route path="/symptom-checker" component={SymptomCheckerPage} />
+      <Route path="/mental-health" component={MentalHealthPage} />
+      <Route path="/reminders" component={MedicationReminderPage} />
+      <Route path="/locator" component={HealthcareLocatorPage} />
       <Route path="/emergency" component={EmergencyPage} />
-      <Route path="/blog" component={() => <Home />} /> {/* Temporarily point to Home */}
-      <Route path="/videos" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/services" component={ServicesPage} />
       <Route path="/forum" component={() => <div className="py-8"><CommunityForum /></div>} />
       <Route path="/volunteer" component={() => <div className="py-8 container mx-auto"><VolunteerForm /></div>} />
-      <Route path="/api-docs" component={() => <Home />} /> {/* Temporarily point to Home */}
-      <Route path="/research" component={() => <Home />} /> {/* Temporarily point to Home */}
-      <Route path="/privacy" component={() => <Home />} /> {/* Temporarily point to Home */}
-      <Route path="/terms" component={() => <Home />} /> {/* Temporarily point to Home */}
-      <Route path="/accessibility" component={() => <Home />} /> {/* Temporarily point to Home */}
-      <Route path="/services" component={ServicesPage} />
-      <Route path="/education" component={() => <Home />} /> {/* Temporarily point to Home */}
-      <Route path="/about" component={() => <Home />} /> {/* Temporarily point to Home */}
       <Route component={NotFound} />
     </Switch>
   );
@@ -50,26 +37,23 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <div className="flex-grow">
-            <Router />
-          </div>
-          <Footer />
-          {/* Mobile FAB for emergencies - visible only on smaller screens */}
-          <div className="fixed bottom-6 right-6 md:hidden">
-            <Link href="/emergency">
-              <button 
-                className="w-16 h-16 rounded-full bg-destructive shadow-lg text-white flex items-center justify-center animate-pulse"
-              >
-                <span className="material-icons">emergency</span>
-              </button>
-            </Link>
-          </div>
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <div className="flex-grow">
+          <Router />
         </div>
-        <Toaster />
-      </AuthProvider>
+        <Footer />
+        <div className="fixed bottom-6 right-6 md:hidden">
+          <Link href="/emergency">
+            <button 
+              className="w-16 h-16 rounded-full bg-destructive shadow-lg text-white flex items-center justify-center animate-pulse"
+            >
+              <span className="material-icons">emergency</span>
+            </button>
+          </Link>
+        </div>
+      </div>
+      <Toaster />
     </QueryClientProvider>
   );
 }
