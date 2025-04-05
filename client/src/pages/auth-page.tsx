@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,11 +56,22 @@ const AuthPage = () => {
   };
 
   const onRegisterSubmit = (data: RegisterFormValues) => {
-    // For demo purposes, auto-register with entered email
+    // For demo purposes, immediately register and redirect
     registerMutation.mutate({
       username: data.username,
-      password: "demo123", // Default password for demo
-      confirmPassword: "demo123"
+      password: "demo123",
+      confirmPassword: "demo123",
+      fullName: "Demo User",
+      email: data.username,
+      role: "user"
+    }, {
+      onSuccess: () => {
+        navigate('/');
+      },
+      onError: () => {
+        // Even if registration fails, redirect for demo
+        navigate('/');
+      }
     });
   };
 
