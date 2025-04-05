@@ -20,9 +20,14 @@ const registerSchema = z.object({
   username: z.string(),
   password: z.string(),
   confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords must match",
-  path: ["confirmPassword"],
+}).superRefine((data, ctx) => {
+  if (data.password !== data.confirmPassword) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Passwords must match",
+      path: ["confirmPassword"]
+    });
+  }
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
