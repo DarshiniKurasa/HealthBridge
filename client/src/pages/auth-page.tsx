@@ -70,7 +70,7 @@ const AuthPage = () => {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-background to-secondary/20">
-      <div className="container flex flex-col-reverse md:flex-row items-center justify-center py-12">
+      <div className="container flex flex-col-reverse md:flex-row items-start justify-center py-12">
         <div className="w-full max-w-md space-y-6 p-6">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold tracking-tight">
