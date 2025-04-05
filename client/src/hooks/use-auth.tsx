@@ -46,19 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (res.status === 401) {
           return null;
         }
-        const userData = await res.json();
-        sessionStorage.setItem('user', JSON.stringify(userData));
-        return userData;
+        return await res.json();
       } catch (error) {
-        const cachedUser = sessionStorage.getItem('user');
-        return cachedUser ? JSON.parse(cachedUser) : null;
+        return null;
       }
     },
-    initialData: () => {
-      const cachedUser = sessionStorage.getItem('user');
-      return cachedUser ? JSON.parse(cachedUser) : null;
-    },
-    staleTime: 1000 * 60 * 30, // Consider data fresh for 30 minutes
   });
 
   const loginMutation = useMutation({
@@ -120,7 +112,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
-      sessionStorage.removeItem('user');
       toast({
         title: "Logged out",
         description: "You have been successfully logged out.",
