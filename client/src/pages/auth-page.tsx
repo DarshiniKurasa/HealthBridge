@@ -52,15 +52,7 @@ const AuthPage = () => {
   });
 
   const onLoginSubmit = (data: LoginFormValues) => {
-    loginMutation.mutate(data, {
-      onSuccess: () => {
-        navigate('/');
-      },
-      onError: () => {
-        // For demo purposes, redirect even on error
-        navigate('/');
-      }
-    });
+    loginMutation.mutate(data);
   };
 
   const onRegisterSubmit = (data: RegisterFormValues) => {
