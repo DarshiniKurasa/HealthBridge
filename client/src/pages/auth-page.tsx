@@ -28,6 +28,15 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
+  
+  const handleModeSwitch = (loginMode: boolean) => {
+    setIsLogin(loginMode);
+    if (!loginMode) {
+      registerForm.reset();
+    } else {
+      loginForm.reset();
+    }
+  };
   const { user, loginMutation, registerMutation } = useAuth();
   const [location, navigate] = useLocation();
 
@@ -54,6 +63,9 @@ const AuthPage = () => {
       fullName: "",
       role: "patient",
     },
+    resetOptions: {
+      keepDirtyValues: false,
+    }
   });
 
   const onLoginSubmit = (data: LoginFormValues) => {
@@ -138,7 +150,7 @@ const AuthPage = () => {
                 <div className="text-sm text-center text-muted-foreground">
                   Don't have an account?{" "}
                   <button
-                    onClick={() => setIsLogin(false)}
+                    onClick={() => handleModeSwitch(false)}
                     className="text-primary underline-offset-4 hover:underline"
                   >
                     Sign up
@@ -265,7 +277,7 @@ const AuthPage = () => {
                 <div className="text-sm text-center text-muted-foreground">
                   Already have an account?{" "}
                   <button
-                    onClick={() => setIsLogin(true)}
+                    onClick={() => handleModeSwitch(true)}
                     className="text-primary underline-offset-4 hover:underline"
                   >
                     Sign in
