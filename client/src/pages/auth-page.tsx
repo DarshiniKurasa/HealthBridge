@@ -52,19 +52,7 @@ const AuthPage = () => {
   });
 
   const onLoginSubmit = (data: LoginFormValues) => {
-    loginMutation.mutate(data, {
-      onSuccess: () => {
-        const redirectPath = sessionStorage.getItem('redirectAfterAuth') || '/';
-        sessionStorage.removeItem('redirectAfterAuth');
-        navigate(redirectPath);
-      },
-      onError: () => {
-        // For demo purposes, redirect even on error
-        const redirectPath = sessionStorage.getItem('redirectAfterAuth') || '/';
-        sessionStorage.removeItem('redirectAfterAuth');
-        navigate(redirectPath);
-      }
-    });
+    loginMutation.mutate(data);
   };
 
   const onRegisterSubmit = (data: RegisterFormValues) => {

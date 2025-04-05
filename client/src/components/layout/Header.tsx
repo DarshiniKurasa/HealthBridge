@@ -1,15 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
-import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -18,7 +9,6 @@ import {
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user } = useAuth();
 
   const navItems = [
     { label: 'Home', href: '/' },
@@ -48,36 +38,11 @@ const Header = () => {
               </Link>
             ))}
           </div>
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="cursor-pointer">
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user.email ? user.email.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem disabled className="flex flex-col items-start gap-1">
-                  <div className="font-medium">{user.username}</div>
-                  <div className="text-sm text-muted-foreground">{user.email}</div>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => logoutMutation.mutate()}
-                  className="text-red-600 focus:text-red-600 cursor-pointer"
-                >
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Link href="/auth">
-              <Button className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
-                Sign In
-              </Button>
-            </Link>
-          )}
+          <Link href="/auth">
+            <Button className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
+              Sign In
+            </Button>
+          </Link>
           
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>

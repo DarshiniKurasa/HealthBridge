@@ -26,9 +26,7 @@ export function ProtectedRoute({
     );
   }
 
-  if (!user && !isLoading) {
-    const currentPath = window.location.pathname;
-    sessionStorage.setItem('redirectAfterAuth', currentPath);
+  if (!user) {
     return (
       <Route path={path}>
         {() => <Redirect to="/auth" />}
