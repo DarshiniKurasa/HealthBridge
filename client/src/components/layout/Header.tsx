@@ -17,7 +17,7 @@ import {
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
 
   const navItems = [
     { label: 'Home', href: '/' },
@@ -54,10 +54,16 @@ const Header = () => {
                   {user.username.charAt(0).toUpperCase()}
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem disabled>{user.username}</DropdownMenuItem>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuItem disabled className="flex flex-col items-start">
+                  <span className="font-medium">{user.username}</span>
+                  <span className="text-sm text-muted-foreground">{user.email}</span>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => logoutMutation.mutate()}>
+                <DropdownMenuItem 
+                  onClick={() => logoutMutation.mutate()}
+                  className="text-red-600 focus:text-red-600"
+                >
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
