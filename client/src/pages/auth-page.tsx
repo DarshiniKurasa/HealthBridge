@@ -58,9 +58,9 @@ const AuthPage = () => {
   const registerForm = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      username: "",
-      password: "",
       email: "",
+      password: "",
+      confirmPassword: "",
     },
     resetOptions: {
       keepDirtyValues: false,
@@ -104,77 +104,11 @@ const AuthPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                    <FormField
-                      control={loginForm.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="johndoe@example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={loginForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loginMutation.isPending}
-                    >
-                      {loginMutation.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Signing in...
-                        </>
-                      ) : (
-                        "Sign In"
-                      )}
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-              <CardFooter className="flex flex-col space-y-4">
-                <div className="text-sm text-center text-muted-foreground">
-                  Don't have an account?{" "}
-                  <button
-                    onClick={() => handleModeSwitch(false)}
-                    className="text-primary underline-offset-4 hover:underline"
-                  >
-                    Sign up
-                  </button>
-                </div>
-              </CardFooter>
-            </Card>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>Create Account</CardTitle>
-                <CardDescription>
-                  Join HealthBridge to access comprehensive healthcare
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
                 <Form {...registerForm}>
                   <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
                     <FormField
                       control={registerForm.control}
-                      name="username"
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Email</FormLabel>
@@ -185,7 +119,7 @@ const AuthPage = () => {
                               {...field}
                               onChange={(e) => {
                                 field.onChange(e);
-                                registerForm.trigger("username");
+                                registerForm.trigger("email");
                               }}
                             />
                           </FormControl>
@@ -235,6 +169,7 @@ const AuthPage = () => {
                     </Button>
                   </form>
                 </Form>
+
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">
                 <div className="text-sm text-center text-muted-foreground">
