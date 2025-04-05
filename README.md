@@ -1,9 +1,18 @@
-![Screenshot 2025-04-05 195645](https://github.com/user-attachments/assets/e5acc595-b537-4f0a-a3c3-7194cd1ea8f4)# 🌉 HealthBridge – Your Gateway to Smarter Healthcare
+# 🌉 HealthBridge – Your Gateway to Smarter Healthcare
 
 **HealthBridge** is a comprehensive web application that simplifies the user experience in accessing essential healthcare services. With modern tech and a clean UI, it offers AI-powered tools, telemedicine, and health record management — all in one place.
 
 ---
+## 📷 Screenshots
 
+![Screenshot 2025-04-05 195622](https://github.com/user-attachments/assets/2d7bc40f-abb7-4972-b81f-cae378ade886)
+![Screenshot 2025-04-05 195645](https://github.com/user-attachments/assets/1c46412b-5b7a-4a66-ae6f-625cd4716586)
+![Screenshot 2025-04-05 195703](https://github.com/user-attachments/assets/4d38e75b-48b7-4afa-93ee-63d49905ece5)
+![Screenshot 2025-04-05 195718](https://github.com/user-attachments/assets/2195eee2-2af8-4143-928a-c2079c1456d6)
+![Screenshot 2025-04-05 195735](https://github.com/user-attachments/assets/33fe543d-399d-41a8-9755-75e50739f6ae)
+![Screenshot 2025-04-05 195754](https://github.com/user-attachments/assets/3db9aeac-f01f-4415-a5d8-88054342669c)
+
+---
 ## 📌 Features
 
 ### 🔐 User Authentication
@@ -58,18 +67,7 @@ DATABASE_URL=•••••••• PGDATABASE=•••••••• PGHOST
 
 ---
 
-## 📷 Screenshots
 
-![Screenshot 2025-04-05 195622](https://github.com/user-attachments/assets/2d7bc40f-abb7-4972-b81f-cae378ade886)
-
-
-![Screenshot 2025-04-05 195754](https://github.com/user-attachments/assets/3db9aeac-f01f-4415-a5d8-88054342669c)
-![Screenshot 2025-04-05 195735](https://github.com/user-attachments/assets/33fe543d-399d-41a8-9755-75e50739f6ae)
-![Screenshot 2025-04-05 195718](https://github.com/user-attachments/assets/2195eee2-2af8-4143-928a-c2079c1456d6)
-![Screenshot 2025-04-05 195703](https://github.com/user-attachments/assets/4d38e75b-48b7-4afa-93ee-63d49905ece5)
-![Screenshot 2025-04-05 195645](https://github.com/user-attachments/assets/1c46412b-5b7a-4a66-ae6f-625cd4716586)
-
----
 
 ## 🚀 Live Demo
 
