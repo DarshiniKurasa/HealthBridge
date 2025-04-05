@@ -22,25 +22,35 @@ const SymptomCheckerCard = () => {
     setSymptoms(symptoms.filter((s) => s !== symptom));
   };
 
-  const handleCheck = () => {
+  const handleCheck = async () => {
     if (symptoms.length === 0) return;
 
     setIsLoading(true);
     setResult(null);
 
-    // In a real implementation, this would call Google Vertex AI
-    setTimeout(() => {
-      // Simulate API response
-      const possibleDiagnoses = [
-        "Common cold - Rest and fluids recommended",
-        "Seasonal allergies - Consider antihistamines",
-        "Possible migraine - Consult with a doctor",
-        "Stress-related symptoms - Consider relaxation techniques"
-      ];
-      
-      setResult(possibleDiagnoses[Math.floor(Math.random() * possibleDiagnoses.length)]);
+    try {
+      // Call our backend API that connects to Gemini
+      const response = await fetch('/api/diagnosis/symptoms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ symptoms }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze symptoms');
+      }
+
+      const data = await response.json();
+      setResult(data.analysis);
+    } catch (error) {
+      console.error('Error analyzing symptoms:', error);
+      // Fallback if the API call fails
+      setResult("Unable to analyze symptoms at this time. Please try again later or consult a healthcare provider directly.");
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   const presetSymptoms = ["Headache", "Fever", "Cough", "Fatigue"];

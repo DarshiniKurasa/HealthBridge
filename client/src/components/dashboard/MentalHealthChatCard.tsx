@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 type Message = {
   id: string;
@@ -10,27 +11,116 @@ type Message = {
   timestamp: Date;
 };
 
+// Function to create a WebSocket connection
+const createWebSocketConnection = (): WebSocket | null => {
+  try {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    return new WebSocket(wsUrl);
+  } catch (error) {
+    console.error("WebSocket connection error:", error);
+    return null;
+  }
+};
+
 const MentalHealthChatCard = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       sender: 'bot',
-      text: "Hello! I'm your mental health assistant. How are you feeling today?",
+      text: "Hello! I'm your mental health assistant powered by Gemini AI. How are you feeling today?",
       timestamp: new Date()
     }
   ]);
   
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const webSocketRef = useRef<WebSocket | null>(null);
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Initialize WebSocket connection
+  useEffect(() => {
+    // Create WebSocket connection
+    const socket = createWebSocketConnection();
+    webSocketRef.current = socket;
+    
+    if (socket) {
+      // Connection opened
+      socket.addEventListener('open', () => {
+        console.log('WebSocket connection established');
+        setWsConnected(true);
+        
+        // Uncomment to notify user that the chat is ready
+        /* toast({
+          title: "Mental Health Support",
+          description: "Connected to AI support assistant",
+        }); */
+      });
+      
+      // Listen for messages
+      socket.addEventListener('message', (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'chat_response') {
+            const botMessage: Message = {
+              id: Date.now().toString(),
+              sender: 'bot',
+              text: data.message,
+              timestamp: new Date(data.timestamp)
+            };
+            
+            setMessages((prev) => [...prev, botMessage]);
+            setIsTyping(false);
+          }
+        } catch (error) {
+          console.error('Error processing message:', error);
+          setIsTyping(false);
+        }
+      });
+      
+      // Connection closed or error
+      socket.addEventListener('close', () => {
+        console.log('WebSocket connection closed');
+        setWsConnected(false);
+        
+        // Attempt to reconnect after a delay
+        setTimeout(() => {
+          webSocketRef.current = createWebSocketConnection();
+        }, 3000);
+      });
+      
+      socket.addEventListener('error', (error) => {
+        console.error('WebSocket error:', error);
+        setWsConnected(false);
+      });
+    }
+    
+    // Clean up on unmount
+    return () => {
+      if (webSocketRef.current) {
+        webSocketRef.current.close();
+      }
+    };
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Compile chat history for context
+  const getMessageHistory = (): string => {
+    return messages
+      .slice(-5) // Only use the last 5 messages for context
+      .map(msg => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.text}`)
+      .join('\n');
+  };
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
@@ -47,26 +137,35 @@ const MentalHealthChatCard = () => {
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate chatbot response
-    // In a real implementation, this would use Dialogflow API
-    setTimeout(() => {
-      const botResponses: string[] = [
-        "I understand how you're feeling. Would you like to try a breathing exercise to help with that?",
-        "Thank you for sharing. It's normal to feel that way sometimes. Would you prefer to talk more about it or try a guided meditation?",
-        "I hear you. Sometimes talking to a professional can be helpful. Would you like me to suggest some resources?",
-        "I appreciate you opening up. Let's work through this together. What specific aspect is troubling you the most?"
-      ];
-      
-      const botMessage: Message = {
-        id: Date.now().toString(),
-        sender: 'bot',
-        text: botResponses[Math.floor(Math.random() * botResponses.length)],
+    // Send message via WebSocket if connected
+    if (webSocketRef.current && webSocketRef.current.readyState === WebSocket.OPEN) {
+      const messagePayload = {
+        type: 'chat_message',
+        content: inputValue,
+        history: getMessageHistory(),
         timestamp: new Date()
       };
       
-      setMessages((prev) => [...prev, botMessage]);
-      setIsTyping(false);
-    }, 1500);
+      webSocketRef.current.send(JSON.stringify(messagePayload));
+    } else {
+      // Fallback if WebSocket is not connected
+      setTimeout(() => {
+        const fallbackMessage: Message = {
+          id: Date.now().toString(),
+          sender: 'bot',
+          text: "I'm having trouble connecting to the AI service. Please try again in a moment or refresh the page.",
+          timestamp: new Date()
+        };
+        
+        setMessages((prev) => [...prev, fallbackMessage]);
+        setIsTyping(false);
+        
+        // Try to reconnect
+        if (!webSocketRef.current || webSocketRef.current.readyState !== WebSocket.OPEN) {
+          webSocketRef.current = createWebSocketConnection();
+        }
+      }, 1500);
+    }
   };
 
   return (
@@ -75,7 +174,15 @@ const MentalHealthChatCard = () => {
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="text-lg font-semibold text-neutral-900">Mental Health Support</h3>
-            <p className="text-neutral-600 text-sm">24/7 AI chatbot and guided meditation resources</p>
+            <p className="text-neutral-600 text-sm">
+              24/7 AI chatbot and guided meditation resources
+              {wsConnected && (
+                <span className="inline-flex items-center ml-2 text-green-600">
+                  <span className="h-2 w-2 rounded-full bg-green-500 mr-1 animate-pulse"></span>
+                  <span className="text-xs">AI Connected</span>
+                </span>
+              )}
+            </p>
           </div>
           <span className="material-icons text-primary">sentiment_satisfied_alt</span>
         </div>

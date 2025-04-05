@@ -198,6 +198,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Symptom Diagnosis Route
+  apiRouter.post("/diagnosis/symptoms", async (req, res) => {
+    try {
+      const { symptoms } = req.body;
+      
+      if (!symptoms || !Array.isArray(symptoms) || symptoms.length === 0) {
+        return res.status(400).json({ message: "Valid symptoms array required" });
+      }
+      
+      try {
+        // Import the analyzeSymptoms function from geminiApi
+        const { analyzeSymptoms } = await import('./geminiApi');
+        
+        // Get AI analysis of symptoms
+        const analysis = await analyzeSymptoms(symptoms);
+        
+        return res.json({ 
+          message: "Symptom analysis completed",
+          analysis,
+          source: "gemini" 
+        });
+      } catch (error) {
+        log(`Error analyzing symptoms with Gemini: ${error}`, 'diagnosis');
+        
+        // Fallback responses if AI processing fails
+        const fallbackResponses = [
+          "Based on your symptoms, you might be experiencing a common cold. Rest, fluids, and over-the-counter medication may help. Consult a doctor if symptoms worsen.",
+          "Your symptoms could be related to seasonal allergies. Antihistamines might provide relief. If symptoms persist, please consult a healthcare provider.",
+          "These symptoms could indicate a viral infection. Rest and hydration are important. If symptoms worsen or persist beyond a few days, consult a healthcare professional."
+        ];
+        
+        return res.json({ 
+          message: "Symptom analysis completed",
+          analysis: fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)] + 
+                   "\n\nDISCLAIMER: This is not a medical diagnosis. Please consult a healthcare professional for proper evaluation.",
+          source: "fallback"
+        });
+      }
+    } catch (error) {
+      log(`Diagnosis route error: ${error}`, 'diagnosis');
+      res.status(500).json({ message: "Error processing symptom diagnosis" });
+    }
+  });
+  
   // Health Education Content Routes
   apiRouter.post("/education/content", async (req, res) => {
     try {
@@ -256,6 +300,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api", apiRouter);
 
   const httpServer = createServer(app);
+
+  // Set up WebSocket server for mental health chat
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  wss.on('connection', (ws) => {
+    log('WebSocket client connected', 'websocket');
+    
+    ws.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        
+        if (data.type === 'chat_message' && data.content) {
+          // If we have the required imports, we can use them
+          const { processMentalHealthMessage } = await import('./geminiApi');
+          
+          log(`Received message: ${data.content}`, 'websocket');
+          
+          try {
+            // Process the message with Gemini AI
+            const aiResponse = await processMentalHealthMessage(data.content, data.history || '');
+            
+            // Send the AI response back to the client
+            const response = {
+              type: 'chat_response',
+              message: aiResponse,
+              timestamp: new Date()
+            };
+            
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify(response));
+            }
+          } catch (error) {
+            log(`Error processing mental health message: ${error}`, 'websocket');
+            
+            // Fallback response if AI processing fails
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({
+                type: 'chat_response',
+                message: "I'm here to listen. Could you tell me more about how you're feeling?",
+                timestamp: new Date()
+              }));
+            }
+          }
+        }
+      } catch (error) {
+        log(`Error parsing WebSocket message: ${error}`, 'websocket');
+      }
+    });
+    
+    ws.on('close', () => {
+      log('WebSocket client disconnected', 'websocket');
+    });
+  });
 
   return httpServer;
 }
