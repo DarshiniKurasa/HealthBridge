@@ -11,7 +11,24 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      {/* Add additional routes here */}
+      <Route path="/telemedicine" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/symptom-checker" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/mental-health" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/reminders" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/locator" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/emergency" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/blog" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/videos" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/forum" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/volunteer" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/api-docs" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/research" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/privacy" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/terms" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/accessibility" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/services" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/education" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/about" component={() => <Home />} /> {/* Temporarily point to Home */}
       <Route component={NotFound} />
     </Switch>
   );
