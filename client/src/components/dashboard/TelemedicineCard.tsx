@@ -1,18 +1,19 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useLocation } from "wouter";
 
 const TelemedicineCard = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [, navigate] = useLocation();
 
   const handleStartSession = () => {
     setIsLoading(true);
-    // In a real implementation, this would start a Google Meet session
+    // Navigate to the telemedicine page
     setTimeout(() => {
-      // Simulate API call
       setIsLoading(false);
-      window.open("https://meet.google.com", "_blank");
-    }, 1500);
+      navigate("/telemedicine");
+    }, 500);
   };
 
   return (

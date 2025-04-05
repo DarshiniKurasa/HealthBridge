@@ -4,12 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
+import { useLocation } from "wouter";
 
 const SymptomCheckerCard = () => {
   const [symptoms, setSymptoms] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [, navigate] = useLocation();
 
   const handleAddSymptom = () => {
     if (inputValue.trim() && !symptoms.includes(inputValue.trim())) {
@@ -55,10 +57,15 @@ const SymptomCheckerCard = () => {
 
   const presetSymptoms = ["Headache", "Fever", "Cough", "Fatigue"];
 
+  // Function to handle navigation to the full symptom checker page
+  const handleNavigateToFullSymptomChecker = () => {
+    navigate('/symptom-checker');
+  };
+
   return (
     <Card className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
       <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-4 cursor-pointer" onClick={handleNavigateToFullSymptomChecker}>
           <div>
             <h3 className="text-lg font-semibold text-neutral-900">AI Symptom Checker</h3>
             <p className="text-neutral-600 text-sm">Get preliminary diagnosis before consulting a doctor</p>
@@ -133,9 +140,17 @@ const SymptomCheckerCard = () => {
             </div>
           )}
         </div>
-        <div className="flex items-center text-neutral-600 text-sm">
-          <span className="material-icons text-sm mr-1">privacy_tip</span>
-          All symptom data is private and secure
+        <div className="flex items-center justify-between">
+          <div className="flex items-center text-neutral-600 text-sm">
+            <span className="material-icons text-sm mr-1">privacy_tip</span>
+            All symptom data is private and secure
+          </div>
+          <Button variant="ghost" className="text-secondary" onClick={handleNavigateToFullSymptomChecker}>
+            <span className="flex items-center text-sm">
+              Advanced Options
+              <span className="material-icons text-sm ml-1">arrow_forward</span>
+            </span>
+          </Button>
         </div>
       </div>
     </Card>

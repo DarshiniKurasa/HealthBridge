@@ -2,12 +2,18 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 
 const HealthcareLocatorCard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [activeFilter, setActiveFilter] = useState<'hospitals' | 'pharmacies' | null>(null);
+  const [, navigate] = useLocation();
+
+  const navigateToLocator = () => {
+    navigate('/locator');
+  };
 
   const handleSearch = () => {
     setIsLoading(true);
@@ -43,14 +49,14 @@ const HealthcareLocatorCard = () => {
   return (
     <Card className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
       <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-4 cursor-pointer" onClick={navigateToLocator}>
           <div>
             <h3 className="text-lg font-semibold text-neutral-900">Healthcare Locator</h3>
             <p className="text-neutral-600 text-sm">Find nearby clinics, hospitals and pharmacies</p>
           </div>
           <span className="material-icons text-orange-500">map</span>
         </div>
-        <div className="rounded-lg overflow-hidden h-48 bg-neutral-200 mb-4 relative">
+        <div className="rounded-lg overflow-hidden h-48 bg-neutral-200 mb-4 relative cursor-pointer" onClick={navigateToLocator}>
           {/* Map placeholder - in production, this would use Google Maps API */}
           <div className="absolute inset-0 bg-neutral-200 flex items-center justify-center">
             <p className="text-neutral-500">Map showing nearby healthcare facilities</p>

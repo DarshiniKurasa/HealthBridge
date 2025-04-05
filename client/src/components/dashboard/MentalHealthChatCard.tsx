@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 type Message = {
   id: string;
@@ -39,6 +40,12 @@ const MentalHealthChatCard = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const webSocketRef = useRef<WebSocket | null>(null);
   const { toast } = useToast();
+  const [, navigate] = useLocation();
+  
+  // Function to navigate to the full mental health page
+  const navigateToMentalHealthPage = () => {
+    navigate('/mental-health');
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -171,7 +178,7 @@ const MentalHealthChatCard = () => {
   return (
     <Card className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
       <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-4 cursor-pointer" onClick={navigateToMentalHealthPage}>
           <div>
             <h3 className="text-lg font-semibold text-neutral-900">Mental Health Support</h3>
             <p className="text-neutral-600 text-sm">
@@ -246,6 +253,10 @@ const MentalHealthChatCard = () => {
           <Button 
             variant="outline" 
             className="flex-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 transition-colors rounded"
+            onClick={() => {
+              navigateToMentalHealthPage();
+              // For a real implementation, we would also set an active tab
+            }}
           >
             <span className="material-icons text-sm mr-1">self_improvement</span>
             Meditation
@@ -253,9 +264,23 @@ const MentalHealthChatCard = () => {
           <Button 
             variant="outline" 
             className="flex-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 transition-colors rounded"
+            onClick={() => {
+              navigateToMentalHealthPage();
+              // For a real implementation, we would also set an active tab
+            }}
           >
             <span className="material-icons text-sm mr-1">video_library</span>
             Therapy Videos
+          </Button>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <Button 
+            variant="ghost" 
+            className="text-primary text-sm flex items-center"
+            onClick={navigateToMentalHealthPage}
+          >
+            View All Resources
+            <span className="material-icons text-sm ml-1">arrow_forward</span>
           </Button>
         </div>
       </div>
