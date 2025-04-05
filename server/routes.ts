@@ -17,6 +17,11 @@ import {
 } from "@shared/schema";
 import { forwardGeocode, reverseGeocode, findNearbyHealthcareFacilities } from "./geocodingApi";
 import { createVideoRoom, createRoomToken, deleteRoom, validateDailyApiKey } from "./dailyApi";
+import { createSchedule, getSchedules, deleteSchedule, createMedicationReminder, validateCronhooksApiKey } from "./cronhooksApi";
+import { searchVideos, getVideoById, getPopularVideos, validatePexelsApiKey } from "./pexelsApi";
+import { submitForm, submitVolunteerApplication, submitContactForm, isFormspreeConfigured } from "./formspreeApi";
+import { getSymptoms, getRiskFactors, parseSymptoms, getDiagnosis, getTriage, validateInfermedicaApiCredentials } from "./infermedica";
+import { getRandomQuote, getQuoteOfTheDay, getMultipleQuotes, getMentalHealthQuotes } from "./zenQuotesApi";
 
 // Function to check if a Perplexity API key is available
 const hasPerplexityKey = () => {
@@ -26,6 +31,26 @@ const hasPerplexityKey = () => {
 // Function to check if a Daily.co API key is available
 const hasDailyApiKey = () => {
   return !!process.env.DAILY_API_KEY;
+};
+
+// Function to check if a Pexels API key is available
+const hasPexelsApiKey = () => {
+  return !!process.env.PEXELS_API_KEY;
+};
+
+// Function to check if Infermedica API credentials are available
+const hasInfermedicaCredentials = () => {
+  return !!process.env.INFERMEDICA_API_KEY && !!process.env.INFERMEDICA_APP_ID;
+};
+
+// Function to check if a Cronhooks API key is available
+const hasCronhooksApiKey = () => {
+  return !!process.env.CRONHOOKS_API_KEY;
+};
+
+// Function to check if a Formspree form ID is available
+const hasFormspreeFormId = () => {
+  return !!process.env.FORMSPREE_FORM_ID;
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -484,6 +509,481 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         status: "error", 
         message: "Error deleting room",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  // Cronhooks Medication Reminder Routes
+  apiRouter.post("/reminders/schedule", async (req, res) => {
+    try {
+      if (!hasCronhooksApiKey()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Cronhooks reminder service not configured"
+        });
+      }
+      
+      const { userId, medicationName, dosage, scheduledTime, frequency, callbackUrl } = req.body;
+      
+      if (!userId || !medicationName || !dosage || !scheduledTime) {
+        return res.status(400).json({ message: "User ID, medication name, dosage, and scheduled time are required" });
+      }
+      
+      const schedule = await createMedicationReminder(
+        parseInt(userId),
+        medicationName,
+        dosage,
+        scheduledTime,
+        frequency || 'daily',
+        callbackUrl
+      );
+      
+      res.status(201).json({ 
+        status: "success",
+        message: "Medication reminder scheduled successfully",
+        schedule
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error scheduling medication reminder",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.get("/reminders/schedules", async (req, res) => {
+    try {
+      if (!hasCronhooksApiKey()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Cronhooks reminder service not configured"
+        });
+      }
+      
+      const schedules = await getSchedules();
+      res.json({ 
+        status: "success",
+        schedules
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error retrieving schedules",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.delete("/reminders/schedules/:id", async (req, res) => {
+    try {
+      if (!hasCronhooksApiKey()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Cronhooks reminder service not configured"
+        });
+      }
+      
+      const { id } = req.params;
+      
+      if (!id) {
+        return res.status(400).json({ message: "Schedule ID is required" });
+      }
+      
+      const success = await deleteSchedule(id);
+      
+      if (success) {
+        res.json({ 
+          status: "success", 
+          message: "Schedule deleted successfully" 
+        });
+      } else {
+        res.status(500).json({ 
+          status: "error", 
+          message: "Failed to delete schedule" 
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error deleting schedule",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  // Pexels Video API Routes
+  apiRouter.get("/videos/search", async (req, res) => {
+    try {
+      if (!hasPexelsApiKey()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Pexels video service not configured"
+        });
+      }
+      
+      const { query, page, perPage } = req.query;
+      
+      if (!query) {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+      
+      const videos = await searchVideos(
+        query as string,
+        perPage ? parseInt(perPage as string) : 10,
+        page ? parseInt(page as string) : 1
+      );
+      
+      res.json({ 
+        status: "success",
+        videos
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error searching videos",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.get("/videos/:id", async (req, res) => {
+    try {
+      if (!hasPexelsApiKey()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Pexels video service not configured"
+        });
+      }
+      
+      const { id } = req.params;
+      
+      if (!id) {
+        return res.status(400).json({ message: "Video ID is required" });
+      }
+      
+      const video = await getVideoById(id);
+      
+      res.json({ 
+        status: "success",
+        video
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error retrieving video",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.get("/videos/popular", async (req, res) => {
+    try {
+      if (!hasPexelsApiKey()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Pexels video service not configured"
+        });
+      }
+      
+      const { page, perPage } = req.query;
+      
+      const videos = await getPopularVideos(
+        perPage ? parseInt(perPage as string) : 10,
+        page ? parseInt(page as string) : 1
+      );
+      
+      res.json({ 
+        status: "success",
+        videos
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error retrieving popular videos",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  // Formspree API Routes
+  apiRouter.post("/volunteers/submit", async (req, res) => {
+    try {
+      if (!hasFormspreeFormId()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Formspree service not configured"
+        });
+      }
+      
+      const { name, email, phone, skills, availability, message } = req.body;
+      
+      if (!name || !email || !phone || !skills || !availability) {
+        return res.status(400).json({ message: "Name, email, phone, skills, and availability are required" });
+      }
+      
+      const response = await submitVolunteerApplication(
+        name,
+        email,
+        phone,
+        Array.isArray(skills) ? skills : [skills],
+        Array.isArray(availability) ? availability : [availability],
+        message
+      );
+      
+      res.status(201).json({ 
+        status: "success",
+        message: "Volunteer application submitted successfully",
+        response
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error submitting volunteer application",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.post("/contact/submit", async (req, res) => {
+    try {
+      if (!hasFormspreeFormId()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Formspree service not configured"
+        });
+      }
+      
+      const { name, email, subject, message } = req.body;
+      
+      if (!name || !email || !subject || !message) {
+        return res.status(400).json({ message: "Name, email, subject, and message are required" });
+      }
+      
+      const response = await submitContactForm(name, email, subject, message);
+      
+      res.status(201).json({ 
+        status: "success",
+        message: "Contact form submitted successfully",
+        response
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error submitting contact form",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  // Infermedica API Routes
+  apiRouter.get("/infermedica/symptoms", async (req, res) => {
+    try {
+      if (!hasInfermedicaCredentials()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Infermedica API not configured"
+        });
+      }
+      
+      const symptoms = await getSymptoms();
+      
+      res.json({ 
+        status: "success",
+        symptoms
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error retrieving symptoms",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.get("/infermedica/risk-factors", async (req, res) => {
+    try {
+      if (!hasInfermedicaCredentials()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Infermedica API not configured"
+        });
+      }
+      
+      const riskFactors = await getRiskFactors();
+      
+      res.json({ 
+        status: "success",
+        riskFactors
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error retrieving risk factors",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.post("/infermedica/parse", async (req, res) => {
+    try {
+      if (!hasInfermedicaCredentials()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Infermedica API not configured"
+        });
+      }
+      
+      const { text, context } = req.body;
+      
+      if (!text) {
+        return res.status(400).json({ message: "Text is required" });
+      }
+      
+      const parsedSymptoms = await parseSymptoms(text, context);
+      
+      res.json({ 
+        status: "success",
+        parsedSymptoms
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error parsing symptoms",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.post("/infermedica/diagnosis", async (req, res) => {
+    try {
+      if (!hasInfermedicaCredentials()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Infermedica API not configured"
+        });
+      }
+      
+      const { evidence, patient } = req.body;
+      
+      if (!evidence || !patient || !patient.sex || !patient.age) {
+        return res.status(400).json({ message: "Evidence, patient sex, and patient age are required" });
+      }
+      
+      const diagnosis = await getDiagnosis(evidence, patient);
+      
+      res.json({ 
+        status: "success",
+        diagnosis
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error getting diagnosis",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.post("/infermedica/triage", async (req, res) => {
+    try {
+      if (!hasInfermedicaCredentials()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Infermedica API not configured"
+        });
+      }
+      
+      const { evidence, patient } = req.body;
+      
+      if (!evidence || !patient || !patient.sex || !patient.age) {
+        return res.status(400).json({ message: "Evidence, patient sex, and patient age are required" });
+      }
+      
+      const triage = await getTriage(evidence, patient);
+      
+      res.json({ 
+        status: "success",
+        triage
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error getting triage",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  // ZenQuotes API Routes
+  apiRouter.get("/quotes/random", async (req, res) => {
+    try {
+      const quote = await getRandomQuote();
+      
+      res.json({ 
+        status: "success",
+        quote
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error retrieving random quote",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.get("/quotes/today", async (req, res) => {
+    try {
+      const quote = await getQuoteOfTheDay();
+      
+      res.json({ 
+        status: "success",
+        quote
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error retrieving quote of the day",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.get("/quotes/multiple", async (req, res) => {
+    try {
+      const { count } = req.query;
+      
+      const quotes = await getMultipleQuotes(count ? parseInt(count as string) : 5);
+      
+      res.json({ 
+        status: "success",
+        quotes
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error retrieving multiple quotes",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.get("/quotes/mental-health", async (req, res) => {
+    try {
+      const { count } = req.query;
+      
+      const quotes = await getMentalHealthQuotes(count ? parseInt(count as string) : 5);
+      
+      res.json({ 
+        status: "success",
+        quotes
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error retrieving mental health quotes",
         error: error.message || String(error)
       });
     }
