@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 const Hero = () => {
   return (
@@ -9,12 +10,16 @@ const Hero = () => {
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Healthcare for All Communities</h1>
             <p className="text-lg mb-6 text-white/90">Access quality healthcare services no matter where you are. Physical and mental health support available 24/7.</p>
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-              <Button className="bg-white text-primary font-medium px-6 py-3 rounded-full hover:bg-neutral-100 transition-colors">
-                Get Started
-              </Button>
-              <Button variant="outline" className="bg-transparent border border-white text-white font-medium px-6 py-3 rounded-full hover:bg-white/10 transition-colors">
-                Emergency Help
-              </Button>
+              <Link href="/services">
+                <Button className="bg-white text-primary font-medium px-6 py-3 rounded-full hover:bg-neutral-100 transition-colors">
+                  Get Started
+                </Button>
+              </Link>
+              <Link href="/emergency">
+                <Button variant="outline" className="bg-transparent border border-white text-white font-medium px-6 py-3 rounded-full hover:bg-white/10 transition-colors">
+                  Emergency Help
+                </Button>
+              </Link>
             </div>
           </div>
           <div className="md:w-1/2 flex justify-center">

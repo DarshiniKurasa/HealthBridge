@@ -39,9 +39,11 @@ const Header = () => {
               </Link>
             ))}
           </div>
-          <Button className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
-            Sign In
-          </Button>
+          <Link href="/auth">
+            <Button className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
+              Sign In
+            </Button>
+          </Link>
           
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
@@ -61,7 +63,9 @@ const Header = () => {
                     </span>
                   </Link>
                 ))}
-                <Button className="mt-4 w-full">Sign In</Button>
+                <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
+                  <Button className="mt-4 w-full">Sign In</Button>
+                </Link>
               </nav>
             </SheetContent>
           </Sheet>

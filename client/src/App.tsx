@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Link } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -59,15 +59,13 @@ function App() {
           <Footer />
           {/* Mobile FAB for emergencies - visible only on smaller screens */}
           <div className="fixed bottom-6 right-6 md:hidden">
-            <button 
-              className="w-16 h-16 rounded-full bg-destructive shadow-lg text-white flex items-center justify-center animate-pulse"
-              onClick={() => {
-                // In a real implementation, this would integrate with emergency services
-                window.location.href = "/emergency";
-              }}
-            >
-              <span className="material-icons">emergency</span>
-            </button>
+            <Link href="/emergency">
+              <button 
+                className="w-16 h-16 rounded-full bg-destructive shadow-lg text-white flex items-center justify-center animate-pulse"
+              >
+                <span className="material-icons">emergency</span>
+              </button>
+            </Link>
           </div>
         </div>
         <Toaster />
