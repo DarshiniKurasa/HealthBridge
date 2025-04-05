@@ -187,33 +187,6 @@ const AuthPage = () => {
                     />
                     <FormField
                       control={registerForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mail Id</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="email" 
-                              placeholder="johndoe@example.com" 
-                              {...field}
-                              onChange={(e) => {
-                                const newValue = e.target.value;
-                                field.onChange(newValue);
-                                registerForm.setValue("email", newValue, {
-                                  shouldValidate: true,
-                                  shouldDirty: true,
-                                  shouldTouch: true
-                                });
-                              }}
-                              value={field.value}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={registerForm.control}
                       name="password"
                       render={({ field }) => (
                         <FormItem>
