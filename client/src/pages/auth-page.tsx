@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,19 +30,9 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
-
-  const handleModeSwitch = (loginMode: boolean) => {
-    setIsLogin(loginMode);
-    if (!loginMode) {
-      registerForm.reset();
-    } else {
-      loginForm.reset();
-    }
-  };
   const { user, loginMutation, registerMutation } = useAuth();
   const [location, navigate] = useLocation();
 
-  // Redirect if user is already logged in
   if (user) {
     navigate("/");
     return null;
@@ -58,17 +49,10 @@ const AuthPage = () => {
   const registerForm = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
       confirmPassword: "",
     },
-    resetOptions: {
-      keepDirtyValues: false,
-      keepErrors: false,
-      keepTouched: false,
-      keepDirty: false,
-      keepValues: false
-    }
   });
 
   const onLoginSubmit = (data: LoginFormValues) => {
@@ -82,7 +66,6 @@ const AuthPage = () => {
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-background to-secondary/20">
       <div className="container flex flex-col-reverse md:flex-row items-center justify-center py-12">
-        {/* Form Side */}
         <div className="w-full max-w-md space-y-6 p-6">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold tracking-tight">
@@ -95,33 +78,66 @@ const AuthPage = () => {
             </p>
           </div>
 
-          {isLogin ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Sign In</CardTitle>
-                <CardDescription>
-                  Enter your credentials to access your account
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...registerForm}>
-                  <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{isLogin ? "Sign In" : "Create Account"}</CardTitle>
+              <CardDescription>
+                {isLogin ? "Enter your credentials to access your account" : "Fill in your details to create an account"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLogin ? (
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                     <FormField
-                      control={registerForm.control}
-                      name="email"
+                      control={loginForm.control}
+                      name="username"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input 
-                              type="email" 
-                              placeholder="johndoe@example.com" 
-                              {...field}
-                              onChange={(e) => {
-                                field.onChange(e);
-                                registerForm.trigger("email");
-                              }}
-                            />
+                            <Input type="email" placeholder="johndoe@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="••••••••" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                      {loginMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Signing in...
+                        </>
+                      ) : (
+                        "Sign In"
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+              ) : (
+                <Form {...registerForm}>
+                  <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                    <FormField
+                      control={registerForm.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="johndoe@example.com" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -153,11 +169,7 @@ const AuthPage = () => {
                         </FormItem>
                       )}
                     />
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={registerMutation.isPending}
-                    >
+                    <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
                       {registerMutation.isPending ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -169,24 +181,22 @@ const AuthPage = () => {
                     </Button>
                   </form>
                 </Form>
-
-              </CardContent>
-              <CardFooter className="flex flex-col space-y-4">
-                <div className="text-sm text-center text-muted-foreground">
-                  Already have an account?{" "}
-                  <button
-                    onClick={() => handleModeSwitch(true)}
-                    className="text-primary underline-offset-4 hover:underline"
-                  >
-                    Sign in
-                  </button>
-                </div>
-              </CardFooter>
-            </Card>
-          )}
+              )}
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4">
+              <div className="text-sm text-center text-muted-foreground">
+                {isLogin ? "Don't have an account? " : "Already have an account? "}
+                <button
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  {isLogin ? "Create one" : "Sign in"}
+                </button>
+              </div>
+            </CardFooter>
+          </Card>
         </div>
 
-        {/* Hero Side */}
         <div className="w-full md:w-1/2 p-6 mb-8 md:mb-0">
           <div className="space-y-4">
             <h1 className="text-4xl font-bold tracking-tight">
@@ -198,7 +208,7 @@ const AuthPage = () => {
             <div className="grid gap-4 py-4">
               <div className="flex items-center">
                 <div className="p-2 bg-primary/10 rounded-full mr-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-primary"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path><circle cx="12" cy="12" r="10"></circle></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path><circle cx="12" cy="12" r="10"></circle></svg>
                 </div>
                 <div>
                   <h3 className="font-medium">Symptom Check</h3>
@@ -207,7 +217,7 @@ const AuthPage = () => {
               </div>
               <div className="flex items-center">
                 <div className="p-2 bg-primary/10 rounded-full mr-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-primary"><path d="M15.6 2.7a10 10 0 1 0 5.7 5.7"></path><circle cx="12" cy="12" r="2"></circle><path d="M13.4 10.6 19 5"></path></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M15.6 2.7a10 10 0 1 0 5.7 5.7"></path><circle cx="12" cy="12" r="2"></circle><path d="M13.4 10.6 19 5"></path></svg>
                 </div>
                 <div>
                   <h3 className="font-medium">Find Care</h3>
@@ -216,7 +226,7 @@ const AuthPage = () => {
               </div>
               <div className="flex items-center">
                 <div className="p-2 bg-primary/10 rounded-full mr-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-primary"><path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path></svg>
                 </div>
                 <div>
                   <h3 className="font-medium">Telemedicine</h3>
@@ -225,7 +235,7 @@ const AuthPage = () => {
               </div>
               <div className="flex items-center">
                 <div className="p-2 bg-primary/10 rounded-full mr-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-primary"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
                 </div>
                 <div>
                   <h3 className="font-medium">Health Records</h3>
