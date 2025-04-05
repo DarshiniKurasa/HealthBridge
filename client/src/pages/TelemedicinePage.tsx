@@ -34,6 +34,7 @@ const TelemedicinePage = () => {
   const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
   const [videoServiceAvailable, setVideoServiceAvailable] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedConsultationType, setSelectedConsultationType] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { toast } = useToast();
 
@@ -223,7 +224,17 @@ const TelemedicinePage = () => {
                     Join</>
                   )}
                 </Button>
-                <Button variant="outline" className="border-neutral-200 text-neutral-700">
+                <Button 
+                  variant="outline" 
+                  className="border-neutral-200 text-neutral-700"
+                  onClick={() => {
+                    toast({
+                      title: "Appointment Rescheduled",
+                      description: "Your appointment has been rescheduled. Check your email for details.",
+                      variant: "default"
+                    });
+                  }}
+                >
                   <span className="material-icons text-sm mr-1">schedule</span>
                   Reschedule
                 </Button>
@@ -236,7 +247,10 @@ const TelemedicinePage = () => {
           <Card className="p-6 bg-white rounded-xl shadow-md">
             <h2 className="text-xl font-semibold mb-4">Book New Appointment</h2>
             <div className="space-y-4">
-              <div className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors">
+              <div 
+                className={`flex items-center p-3 border rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors ${selectedConsultationType === 'general' ? 'border-primary bg-primary/5' : ''}`}
+                onClick={() => setSelectedConsultationType('general')}
+              >
                 <span className="material-icons text-primary mr-3">personal_injury</span>
                 <div>
                   <h3 className="font-medium">General Consultation</h3>
@@ -244,7 +258,10 @@ const TelemedicinePage = () => {
                 </div>
               </div>
               
-              <div className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors">
+              <div 
+                className={`flex items-center p-3 border rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors ${selectedConsultationType === 'prescription' ? 'border-primary bg-primary/5' : ''}`}
+                onClick={() => setSelectedConsultationType('prescription')}
+              >
                 <span className="material-icons text-primary mr-3">medication</span>
                 <div>
                   <h3 className="font-medium">Prescription Renewal</h3>
@@ -252,7 +269,10 @@ const TelemedicinePage = () => {
                 </div>
               </div>
               
-              <div className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors">
+              <div 
+                className={`flex items-center p-3 border rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors ${selectedConsultationType === 'mental' ? 'border-primary bg-primary/5' : ''}`}
+                onClick={() => setSelectedConsultationType('mental')}
+              >
                 <span className="material-icons text-primary mr-3">sentiment_very_dissatisfied</span>
                 <div>
                   <h3 className="font-medium">Mental Health</h3>
@@ -260,7 +280,10 @@ const TelemedicinePage = () => {
                 </div>
               </div>
               
-              <div className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors">
+              <div 
+                className={`flex items-center p-3 border rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors ${selectedConsultationType === 'pediatric' ? 'border-primary bg-primary/5' : ''}`}
+                onClick={() => setSelectedConsultationType('pediatric')}
+              >
                 <span className="material-icons text-primary mr-3">child_care</span>
                 <div>
                   <h3 className="font-medium">Pediatric Care</h3>
@@ -268,7 +291,37 @@ const TelemedicinePage = () => {
                 </div>
               </div>
               
-              <Button className="w-full bg-primary text-white">
+              <Button 
+                className="w-full bg-primary text-white"
+                disabled={!selectedConsultationType}
+                onClick={() => {
+                  if (selectedConsultationType) {
+                    // Map consultation type to a doctor with the right specialty
+                    let doctorForConsultation;
+                    
+                    switch (selectedConsultationType) {
+                      case 'pediatric':
+                        doctorForConsultation = doctors.find(d => d.specialty === 'Pediatrician');
+                        break;
+                      case 'mental':
+                        doctorForConsultation = doctors.find(d => d.specialty === 'Psychiatrist');
+                        break;
+                      default:
+                        doctorForConsultation = doctors.find(d => d.specialty === 'General Physician');
+                    }
+                    
+                    // Show confirmation toast
+                    toast({
+                      title: "Appointment Scheduled",
+                      description: `Your ${selectedConsultationType} appointment has been scheduled. Check your email for details.`,
+                      variant: "default"
+                    });
+                    
+                    // Reset selection
+                    setSelectedConsultationType(null);
+                  }
+                }}
+              >
                 <span className="material-icons text-sm mr-2">calendar_today</span>
                 Schedule Appointment
               </Button>
@@ -316,11 +369,14 @@ const TelemedicinePage = () => {
       
       {/* Video Call Dialog */}
       <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>
-        <DialogContent className="sm:max-w-[800px] h-[600px] p-0">
+        <DialogContent className="sm:max-w-[800px] h-[600px] p-0" aria-describedby="video-call-desc">
           <DialogHeader className="p-4 border-b">
             <DialogTitle>
               {currentDoctor && `Video Call with ${currentDoctor.name}`}
             </DialogTitle>
+            <p id="video-call-desc" className="text-sm text-neutral-500 mt-1">
+              Please allow camera and microphone access when prompted
+            </p>
           </DialogHeader>
           
           {roomDetails && (
