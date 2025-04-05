@@ -16,9 +16,9 @@ const loginSchema = z.object({
 });
 
 const registerSchema = z.object({
-  username: z.string().email("Please enter a valid email address"),
+  username: z.string().email("Please enter a valid email address").min(1, "Email is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string(),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords must match",
   path: ["confirmPassword"],
@@ -183,6 +183,10 @@ const AuthPage = () => {
                               type="email" 
                               placeholder="johndoe@example.com" 
                               {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                registerForm.trigger("username");
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
