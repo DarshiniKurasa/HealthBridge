@@ -3,6 +3,13 @@ import { Link } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Sheet,
   SheetContent,
   SheetTrigger,
@@ -41,9 +48,20 @@ const Header = () => {
             ))}
           </div>
           {user ? (
-            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
-              {user.username.charAt(0).toUpperCase()}
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold cursor-pointer">
+                  {user.username.charAt(0).toUpperCase()}
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem disabled>{user.username}</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => logoutMutation.mutate()}>
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Link href="/auth">
               <Button className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
