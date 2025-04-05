@@ -61,6 +61,10 @@ const AuthPage = () => {
     },
     resetOptions: {
       keepDirtyValues: false,
+      keepErrors: false,
+      keepTouched: false,
+      keepDirty: false,
+      keepValues: false
     }
   });
 
@@ -193,10 +197,15 @@ const AuthPage = () => {
                               placeholder="johndoe@example.com" 
                               {...field}
                               onChange={(e) => {
-                                field.onChange(e.target.value);
-                                registerForm.clearErrors("email");
+                                const newValue = e.target.value;
+                                field.onChange(newValue);
+                                registerForm.setValue("email", newValue, {
+                                  shouldValidate: true,
+                                  shouldDirty: true,
+                                  shouldTouch: true
+                                });
                               }}
-                              value={field.value || ""}
+                              value={field.value}
                             />
                           </FormControl>
                           <FormMessage />
