@@ -166,9 +166,8 @@ const AuthPage = () => {
                           <FormControl>
                             <Input 
                               placeholder="John Doe" 
-                              {...field} 
                               onChange={(e) => field.onChange(e.target.value)}
-                              value={field.value}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormMessage />
@@ -185,9 +184,8 @@ const AuthPage = () => {
                             <Input 
                               type="email" 
                               placeholder="johndoe@example.com" 
-                              {...field}
                               onChange={(e) => field.onChange(e.target.value)}
-                              value={field.value}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormMessage />
