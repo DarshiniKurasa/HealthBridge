@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import express from "express";
@@ -6,6 +6,23 @@ import { z } from "zod";
 import { WebSocketServer, WebSocket } from "ws";
 import { log } from "./vite";
 import { setupAuth } from "./auth";
+
+// Middleware to ensure a user can only access their own data
+const ensureOwnData = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  const requestedUserId = parseInt(req.params.userId);
+  const authenticatedUserId = req.user!.id;
+
+  // If the requested user ID doesn't match the authenticated user's ID
+  if (requestedUserId !== authenticatedUserId) {
+    return res.status(403).json({ error: "Unauthorized access to another user's data" });
+  }
+
+  next();
+};
 import {
   insertUserSchema,
   insertAppointmentSchema,
@@ -145,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  apiRouter.get("/appointments/user/:userId", async (req, res) => {
+  apiRouter.get("/appointments/user/:userId", ensureOwnData, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
       const appointments = await storage.getUserAppointments(userId);
@@ -209,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  apiRouter.get("/reminders/user/:userId", async (req, res) => {
+  apiRouter.get("/reminders/user/:userId", ensureOwnData, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
       const reminders = await storage.getUserMedicationReminders(userId);
@@ -310,13 +327,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Emergency SOS Route
+  // Emergency SOS Route 
   apiRouter.post("/emergency/sos", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
       const { userId, location } = req.body;
       
       if (!userId || !location) {
         return res.status(400).json({ message: "User ID and location are required" });
+      }
+      
+      // Ensure user can only submit emergency alerts for themselves
+      if (req.user!.id !== parseInt(userId.toString())) {
+        return res.status(403).json({ error: "Unauthorized: You can only submit emergency alerts for yourself" });
       }
       
       // In a real implementation, this would trigger notifications to nearby healthcare providers
@@ -521,6 +548,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cronhooks Medication Reminder Routes
   apiRouter.post("/reminders/schedule", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
       if (!hasCronhooksApiKey()) {
         return res.status(503).json({ 
           status: "error", 
@@ -532,6 +564,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!userId || !medicationName || !dosage || !scheduledTime) {
         return res.status(400).json({ message: "User ID, medication name, dosage, and scheduled time are required" });
+      }
+      
+      // Ensure user can only create reminders for themselves
+      if (req.user!.id !== parseInt(userId.toString())) {
+        return res.status(403).json({ error: "Unauthorized: You can only create reminders for yourself" });
       }
       
       const schedule = await createMedicationReminder(
