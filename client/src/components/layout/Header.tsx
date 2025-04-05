@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,15 +50,23 @@ const Header = () => {
           </div>
           {user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger>
-                <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold cursor-pointer">
-                  {user.username.charAt(0).toUpperCase()}
-                </div>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="cursor-pointer">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {user.email ? user.email.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem disabled>{user.username}</DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem disabled className="flex flex-col items-start gap-1">
+                  <div className="font-medium">{user.username}</div>
+                  <div className="text-sm text-muted-foreground">{user.email}</div>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => logoutMutation.mutate()}>
+                <DropdownMenuItem 
+                  onClick={() => logoutMutation.mutate()}
+                  className="text-red-600 focus:text-red-600 cursor-pointer"
+                >
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
