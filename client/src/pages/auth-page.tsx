@@ -54,11 +54,15 @@ const AuthPage = () => {
   const onLoginSubmit = (data: LoginFormValues) => {
     loginMutation.mutate(data, {
       onSuccess: () => {
-        navigate('/');
+        const redirectPath = sessionStorage.getItem('redirectAfterAuth') || '/';
+        sessionStorage.removeItem('redirectAfterAuth');
+        navigate(redirectPath);
       },
       onError: () => {
         // For demo purposes, redirect even on error
-        navigate('/');
+        const redirectPath = sessionStorage.getItem('redirectAfterAuth') || '/';
+        sessionStorage.removeItem('redirectAfterAuth');
+        navigate(redirectPath);
       }
     });
   };
