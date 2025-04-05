@@ -192,6 +192,11 @@ const AuthPage = () => {
                               type="email" 
                               placeholder="johndoe@example.com" 
                               {...field}
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                                registerForm.clearErrors("email");
+                              }}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormMessage />
