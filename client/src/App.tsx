@@ -11,6 +11,8 @@ import HealthcareLocatorPage from "@/pages/HealthcareLocatorPage";
 import MedicationReminderPage from "@/pages/MedicationReminderPage";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import CommunityForum from "@/components/CommunityForum";
+import VolunteerForm from "@/components/VolunteerForm";
 
 function Router() {
   return (
@@ -24,8 +26,8 @@ function Router() {
       <Route path="/emergency" component={() => <Home />} /> {/* Temporarily point to Home */}
       <Route path="/blog" component={() => <Home />} /> {/* Temporarily point to Home */}
       <Route path="/videos" component={() => <Home />} /> {/* Temporarily point to Home */}
-      <Route path="/forum" component={() => <Home />} /> {/* Temporarily point to Home */}
-      <Route path="/volunteer" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/forum" component={() => <div className="py-8"><CommunityForum /></div>} />
+      <Route path="/volunteer" component={() => <div className="py-8 container mx-auto"><VolunteerForm /></div>} />
       <Route path="/api-docs" component={() => <Home />} /> {/* Temporarily point to Home */}
       <Route path="/research" component={() => <Home />} /> {/* Temporarily point to Home */}
       <Route path="/privacy" component={() => <Home />} /> {/* Temporarily point to Home */}
