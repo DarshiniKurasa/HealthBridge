@@ -186,7 +186,7 @@ const AuthPage = () => {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel>Mail Id</FormLabel>
                           <FormControl>
                             <Input 
                               type="email" 
