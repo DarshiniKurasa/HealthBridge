@@ -1,3 +1,25 @@
+
+app.post("/api/support/contact", async (req, res) => {
+  try {
+    const { type, message, email } = req.body;
+    
+    // Here you can integrate with your preferred support system
+    // For example, sending emails, creating support tickets, etc.
+    
+    // For now, we'll just log the request
+    console.log(`Support request received:`, {
+      type,
+      message,
+      email
+    });
+    
+    res.status(200).json({ status: "success" });
+  } catch (error) {
+    console.error("Support request error:", error);
+    res.status(500).json({ status: "error", message: "Failed to process support request" });
+  }
+});
+
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";

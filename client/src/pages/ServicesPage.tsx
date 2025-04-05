@@ -83,14 +83,8 @@ const ServicesPage = () => {
           Our team is ready to help you navigate your healthcare options and find the right resources for your needs.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button variant="default" size="lg">
-            <span className="material-icons mr-2">call</span>
-            Contact Support
-          </Button>
-          <Button variant="outline" size="lg">
-            <span className="material-icons mr-2">question_answer</span>
-            Live Chat
-          </Button>
+          <SupportDialog type="call" />
+          <SupportDialog type="chat" />
         </div>
       </div>
     </div>
