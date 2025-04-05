@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import express from "express";
 import { z } from "zod";
+import { WebSocketServer, WebSocket } from "ws";
+import { log } from "./vite";
 import {
   insertUserSchema,
   insertAppointmentSchema,
@@ -13,6 +15,11 @@ import {
   insertHealthcareProviderSchema,
   insertEducationContentSchema
 } from "@shared/schema";
+
+// Function to check if a Perplexity API key is available
+const hasPerplexityKey = () => {
+  return !!process.env.PERPLEXITY_API_KEY;
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes

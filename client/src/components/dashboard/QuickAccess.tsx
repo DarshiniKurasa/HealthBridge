@@ -14,42 +14,42 @@ const QuickAccess = () => {
       icon: 'video_call',
       label: 'Telemedicine',
       href: '/telemedicine',
-      bgColor: 'bg-primary-light/20',
-      textColor: 'text-primary'
+      bgColor: 'bg-blue-100',
+      textColor: 'text-blue-600'
     },
     {
-      icon: 'psychology',
+      icon: 'health_and_safety',
       label: 'AI Diagnosis',
       href: '/symptom-checker',
-      bgColor: 'bg-secondary/20',
-      textColor: 'text-secondary'
+      bgColor: 'bg-purple-100',
+      textColor: 'text-purple-600'
     },
     {
-      icon: 'map',
+      icon: 'location_on',
       label: 'Find Care',
       href: '/healthcare-locator',
-      bgColor: 'bg-orange-400/20',
-      textColor: 'text-orange-500'
+      bgColor: 'bg-orange-100',
+      textColor: 'text-orange-600'
     },
     {
       icon: 'emergency',
       label: 'SOS',
       href: '/emergency',
-      bgColor: 'bg-destructive/20',
-      textColor: 'text-destructive'
+      bgColor: 'bg-red-100',
+      textColor: 'text-red-600'
     },
     {
       icon: 'medication',
       label: 'Reminders',
       href: '/reminders',
-      bgColor: 'bg-green-500/20',
+      bgColor: 'bg-green-100',
       textColor: 'text-green-600'
     },
     {
       icon: 'forum',
       label: 'Community',
       href: '/community',
-      bgColor: 'bg-yellow-500/20',
+      bgColor: 'bg-yellow-100',
       textColor: 'text-yellow-600'
     }
   ];

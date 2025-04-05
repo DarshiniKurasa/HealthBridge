@@ -33,9 +33,9 @@ const Header = () => {
           <div className="hidden md:flex space-x-4">
             {navItems.map((item) => (
               <Link key={item.label} href={item.href}>
-                <a className="text-neutral-700 hover:text-primary-dark font-medium">
+                <span className="text-neutral-700 hover:text-primary-dark font-medium cursor-pointer">
                   {item.label}
-                </a>
+                </span>
               </Link>
             ))}
           </div>
@@ -53,12 +53,12 @@ const Header = () => {
               <nav className="flex flex-col gap-4 mt-8">
                 {navItems.map((item) => (
                   <Link key={item.label} href={item.href}>
-                    <a 
-                      className="text-lg font-medium hover:text-primary"
+                    <span 
+                      className="text-lg font-medium hover:text-primary cursor-pointer"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.label}
-                    </a>
+                    </span>
                   </Link>
                 ))}
                 <Button className="mt-4 w-full">Sign In</Button>
