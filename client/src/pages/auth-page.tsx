@@ -19,8 +19,6 @@ const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   email: z.string().email("Invalid email address"),
-  fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  role: z.enum(["patient", "provider"]).default("patient"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -28,7 +26,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
-  
+
   const handleModeSwitch = (loginMode: boolean) => {
     setIsLogin(loginMode);
     if (!loginMode) {
@@ -60,8 +58,6 @@ const AuthPage = () => {
       username: "",
       password: "",
       email: "",
-      fullName: "",
-      role: "patient",
     },
     resetOptions: {
       keepDirtyValues: false,
@@ -171,13 +167,13 @@ const AuthPage = () => {
                   <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
                     <FormField
                       control={registerForm.control}
-                      name="fullName"
+                      name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Full Name</FormLabel>
+                          <FormLabel>Username</FormLabel>
                           <FormControl>
                             <Input 
-                              placeholder="John Doe" 
+                              placeholder="johndoe" 
                               {...field}
                             />
                           </FormControl>
@@ -204,19 +200,6 @@ const AuthPage = () => {
                     />
                     <FormField
                       control={registerForm.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Username</FormLabel>
-                          <FormControl>
-                            <Input placeholder="johndoe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={registerForm.control}
                       name="password"
                       render={({ field }) => (
                         <FormItem>
@@ -224,34 +207,6 @@ const AuthPage = () => {
                           <FormControl>
                             <Input type="password" placeholder="••••••••" {...field} />
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={registerForm.control}
-                      name="role"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>I am a</FormLabel>
-                          <div className="flex space-x-2">
-                            <Button
-                              type="button"
-                              variant={field.value === "patient" ? "default" : "outline"}
-                              onClick={() => field.onChange("patient")}
-                              className="flex-1"
-                            >
-                              Patient
-                            </Button>
-                            <Button
-                              type="button"
-                              variant={field.value === "provider" ? "default" : "outline"}
-                              onClick={() => field.onChange("provider")}
-                              className="flex-1"
-                            >
-                              Healthcare Provider
-                            </Button>
-                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
