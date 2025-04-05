@@ -164,7 +164,12 @@ const AuthPage = () => {
                         <FormItem>
                           <FormLabel>Full Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="John Doe" {...field} />
+                            <Input 
+                              placeholder="John Doe" 
+                              {...field} 
+                              onChange={(e) => field.onChange(e.target.value)}
+                              value={field.value}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -177,7 +182,13 @@ const AuthPage = () => {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="johndoe@example.com" {...field} />
+                            <Input 
+                              type="email" 
+                              placeholder="johndoe@example.com" 
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value)}
+                              value={field.value}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
