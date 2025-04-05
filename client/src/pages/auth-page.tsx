@@ -20,14 +20,6 @@ const registerSchema = z.object({
   username: z.string(),
   password: z.string(),
   confirmPassword: z.string()
-}).superRefine((data, ctx) => {
-  if (data.password !== data.confirmPassword) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Passwords must match",
-      path: ["confirmPassword"]
-    });
-  }
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -65,7 +57,12 @@ const AuthPage = () => {
   };
 
   const onRegisterSubmit = (data: RegisterFormValues) => {
-    registerMutation.mutate(data);
+    // For demo purposes, auto-register with entered email
+    registerMutation.mutate({
+      username: data.username,
+      password: "demo123", // Default password for demo
+      confirmPassword: "demo123"
+    });
   };
 
   return (
