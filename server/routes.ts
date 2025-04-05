@@ -15,10 +15,17 @@ import {
   insertHealthcareProviderSchema,
   insertEducationContentSchema
 } from "@shared/schema";
+import { forwardGeocode, reverseGeocode, findNearbyHealthcareFacilities } from "./geocodingApi";
+import { createVideoRoom, createRoomToken, deleteRoom, validateDailyApiKey } from "./dailyApi";
 
 // Function to check if a Perplexity API key is available
 const hasPerplexityKey = () => {
   return !!process.env.PERPLEXITY_API_KEY;
+};
+
+// Function to check if a Daily.co API key is available
+const hasDailyApiKey = () => {
+  return !!process.env.DAILY_API_KEY;
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -293,6 +300,192 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Error sending emergency alert" });
+    }
+  });
+
+  // Geocoding API Routes
+  apiRouter.get("/geocode/forward", async (req, res) => {
+    try {
+      const { address } = req.query;
+      
+      if (!address) {
+        return res.status(400).json({ message: "Address is required" });
+      }
+      
+      const result = await forwardGeocode(address as string);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error geocoding address", error: error.message || String(error) });
+    }
+  });
+
+  apiRouter.get("/geocode/reverse", async (req, res) => {
+    try {
+      const { lat, lng } = req.query;
+      
+      if (!lat || !lng) {
+        return res.status(400).json({ message: "Latitude and longitude are required" });
+      }
+      
+      const result = await reverseGeocode(parseFloat(lat as string), parseFloat(lng as string));
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error reverse geocoding", error: error.message || String(error) });
+    }
+  });
+
+  // Healthcare Facilities Routes
+  apiRouter.get("/healthcare/facilities", async (req, res) => {
+    try {
+      const { lat, lng, type, radius } = req.query;
+      
+      if (!lat || !lng) {
+        return res.status(400).json({ message: "Latitude and longitude are required" });
+      }
+      
+      const facilities = await findNearbyHealthcareFacilities(
+        parseFloat(lat as string),
+        parseFloat(lng as string),
+        type as string || 'hospital',
+        radius ? parseFloat(radius as string) : 5
+      );
+      
+      res.json(facilities);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error finding healthcare facilities", error: error.message || String(error) });
+    }
+  });
+
+  // Video Call Routes
+  apiRouter.get("/video/status", async (req, res) => {
+    try {
+      const isConfigured = hasDailyApiKey();
+      
+      if (isConfigured) {
+        const isValid = await validateDailyApiKey();
+        res.json({ 
+          status: "success", 
+          videoServiceAvailable: isValid,
+          videoProvider: "daily.co" 
+        });
+      } else {
+        res.json({ 
+          status: "success", 
+          videoServiceAvailable: false,
+          videoProvider: null,
+          message: "Video service not configured" 
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error checking video service status",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.post("/video/rooms", async (req, res) => {
+    try {
+      if (!hasDailyApiKey()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Video service not configured"
+        });
+      }
+      
+      const { appointmentId, expiryMinutes } = req.body;
+      
+      if (!appointmentId) {
+        return res.status(400).json({ message: "Appointment ID is required" });
+      }
+      
+      const roomDetails = await createVideoRoom(
+        appointmentId.toString(),
+        expiryMinutes ? parseInt(expiryMinutes) : 60
+      );
+      
+      res.status(201).json({ 
+        status: "success",
+        room: roomDetails
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error creating video room",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.post("/video/tokens", async (req, res) => {
+    try {
+      if (!hasDailyApiKey()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Video service not configured"
+        });
+      }
+      
+      const { roomName, participantName, isDoctor } = req.body;
+      
+      if (!roomName || !participantName) {
+        return res.status(400).json({ message: "Room name and participant name are required" });
+      }
+      
+      const token = await createRoomToken(
+        roomName,
+        participantName,
+        isDoctor === true
+      );
+      
+      res.json({ 
+        status: "success",
+        token
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error creating room token",
+        error: error.message || String(error)
+      });
+    }
+  });
+
+  apiRouter.delete("/video/rooms/:roomName", async (req, res) => {
+    try {
+      if (!hasDailyApiKey()) {
+        return res.status(503).json({ 
+          status: "error", 
+          message: "Video service not configured"
+        });
+      }
+      
+      const { roomName } = req.params;
+      
+      if (!roomName) {
+        return res.status(400).json({ message: "Room name is required" });
+      }
+      
+      const success = await deleteRoom(roomName);
+      
+      if (success) {
+        res.json({ 
+          status: "success",
+          message: "Room deleted successfully" 
+        });
+      } else {
+        res.status(500).json({ 
+          status: "error", 
+          message: "Failed to delete room"
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error deleting room",
+        error: error.message || String(error)
+      });
     }
   });
 

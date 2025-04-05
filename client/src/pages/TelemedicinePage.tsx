@@ -1,11 +1,145 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+
+// Interface for Room details
+interface RoomDetails {
+  roomName: string;
+  roomUrl: string;
+  expiresAt: string;
+  privacy: string;
+}
+
+interface Doctor {
+  id: string;
+  name: string;
+  specialty: string;
+  avatar: string;
+  rating: number;
+}
 
 const TelemedicinePage = () => {
-  const handleStartSession = () => {
-    window.open("https://meet.google.com", "_blank");
+  const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+  const [currentDoctor, setCurrentDoctor] = useState<Doctor | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
+  const [videoServiceAvailable, setVideoServiceAvailable] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const { toast } = useToast();
+
+  // Available doctors
+  const doctors: Doctor[] = [
+    {
+      id: '1',
+      name: 'Dr. Sarah Johnson',
+      specialty: 'General Physician',
+      avatar: 'https://randomuser.me/api/portraits/women/45.jpg',
+      rating: 4.5
+    },
+    {
+      id: '2',
+      name: 'Dr. Michael Chen',
+      specialty: 'Pediatrician',
+      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+      rating: 4.0
+    },
+    {
+      id: '3',
+      name: 'Dr. Emily Rodriguez',
+      specialty: 'Dermatologist',
+      avatar: 'https://randomuser.me/api/portraits/women/67.jpg',
+      rating: 5.0
+    },
+    {
+      id: '4',
+      name: 'Dr. James Wilson',
+      specialty: 'Psychiatrist',
+      avatar: 'https://randomuser.me/api/portraits/men/79.jpg',
+      rating: 4.7
+    }
+  ];
+
+  // Check if the video service is available
+  useEffect(() => {
+    const checkVideoService = async () => {
+      try {
+        const response = await fetch('/api/video/status');
+        const data = await response.json();
+        
+        setVideoServiceAvailable(data.videoServiceAvailable);
+        
+        if (!data.videoServiceAvailable) {
+          console.log('Video service not available:', data.message);
+        }
+      } catch (error) {
+        console.error('Error checking video service:', error);
+        setVideoServiceAvailable(false);
+      }
+    };
+    
+    checkVideoService();
+  }, []);
+
+  const handleStartSession = async (doctor: Doctor) => {
+    setCurrentDoctor(doctor);
+    setIsLoading(true);
+    setError(null);
+    
+    if (!videoServiceAvailable) {
+      // Fallback to the open Google Meet in a new tab if Daily.co is not available
+      window.open("https://meet.google.com", "_blank");
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      // Create a new video room
+      const appointmentId = `app-${Date.now()}`;
+      const response = await fetch('/api/video/rooms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          appointmentId,
+          expiryMinutes: 60, // 1 hour expiry
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.status === 'success' && data.room) {
+        setRoomDetails(data.room);
+        setIsVideoDialogOpen(true);
+      } else {
+        setError(data.message || 'Failed to create video room');
+        toast({
+          title: "Error",
+          description: "Could not create video room. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error creating video room:', error);
+      setError('Failed to connect. Please try again later.');
+      toast({
+        title: "Connection Error",
+        description: "Could not connect to the video service. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -26,117 +160,45 @@ const TelemedicinePage = () => {
           <h2 className="text-xl font-semibold mb-4">Available Doctors</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            {/* Doctor Card 1 */}
-            <div className="p-4 border rounded-lg flex items-start">
-              <img 
-                src="https://randomuser.me/api/portraits/women/45.jpg" 
-                alt="Dr. Sarah Johnson"
-                className="w-16 h-16 rounded-full mr-4" 
-              />
-              <div>
-                <h3 className="font-semibold">Dr. Sarah Johnson</h3>
-                <p className="text-sm text-neutral-500">General Physician</p>
-                <div className="flex items-center mt-1 text-yellow-500">
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star_half</span>
-                  <span className="text-neutral-700 text-xs ml-1">(4.5)</span>
+            {doctors.map((doctor) => (
+              <div key={doctor.id} className="p-4 border rounded-lg flex items-start">
+                <img 
+                  src={doctor.avatar} 
+                  alt={doctor.name}
+                  className="w-16 h-16 rounded-full mr-4" 
+                />
+                <div>
+                  <h3 className="font-semibold">{doctor.name}</h3>
+                  <p className="text-sm text-neutral-500">{doctor.specialty}</p>
+                  <div className="flex items-center mt-1 text-yellow-500">
+                    <span className="material-icons text-sm">star</span>
+                    <span className="material-icons text-sm">star</span>
+                    <span className="material-icons text-sm">star</span>
+                    <span className="material-icons text-sm">star</span>
+                    {doctor.rating === 5 ? (
+                      <span className="material-icons text-sm">star</span>
+                    ) : doctor.rating >= 4.5 ? (
+                      <span className="material-icons text-sm">star_half</span>
+                    ) : (
+                      <span className="material-icons text-sm">star_outline</span>
+                    )}
+                    <span className="text-neutral-700 text-xs ml-1">({doctor.rating})</span>
+                  </div>
+                  <Button 
+                    onClick={() => handleStartSession(doctor)}
+                    className="mt-2 bg-primary text-white px-3 py-1 text-sm rounded-full"
+                    disabled={isLoading && currentDoctor?.id === doctor.id}
+                  >
+                    {isLoading && currentDoctor?.id === doctor.id ? (
+                      "Connecting..."
+                    ) : (
+                      <><span className="material-icons text-sm mr-1">video_call</span>
+                      Connect Now</>
+                    )}
+                  </Button>
                 </div>
-                <Button 
-                  onClick={handleStartSession}
-                  className="mt-2 bg-primary text-white px-3 py-1 text-sm rounded-full"
-                >
-                  <span className="material-icons text-sm mr-1">video_call</span>
-                  Connect Now
-                </Button>
               </div>
-            </div>
-            
-            {/* Doctor Card 2 */}
-            <div className="p-4 border rounded-lg flex items-start">
-              <img 
-                src="https://randomuser.me/api/portraits/men/32.jpg" 
-                alt="Dr. Michael Chen"
-                className="w-16 h-16 rounded-full mr-4" 
-              />
-              <div>
-                <h3 className="font-semibold">Dr. Michael Chen</h3>
-                <p className="text-sm text-neutral-500">Pediatrician</p>
-                <div className="flex items-center mt-1 text-yellow-500">
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star_outline</span>
-                  <span className="text-neutral-700 text-xs ml-1">(4.0)</span>
-                </div>
-                <Button 
-                  onClick={handleStartSession}
-                  className="mt-2 bg-primary text-white px-3 py-1 text-sm rounded-full"
-                >
-                  <span className="material-icons text-sm mr-1">video_call</span>
-                  Connect Now
-                </Button>
-              </div>
-            </div>
-            
-            {/* Doctor Card 3 */}
-            <div className="p-4 border rounded-lg flex items-start">
-              <img 
-                src="https://randomuser.me/api/portraits/women/67.jpg" 
-                alt="Dr. Emily Rodriguez"
-                className="w-16 h-16 rounded-full mr-4" 
-              />
-              <div>
-                <h3 className="font-semibold">Dr. Emily Rodriguez</h3>
-                <p className="text-sm text-neutral-500">Dermatologist</p>
-                <div className="flex items-center mt-1 text-yellow-500">
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="text-neutral-700 text-xs ml-1">(5.0)</span>
-                </div>
-                <Button 
-                  onClick={handleStartSession}
-                  className="mt-2 bg-primary text-white px-3 py-1 text-sm rounded-full"
-                >
-                  <span className="material-icons text-sm mr-1">video_call</span>
-                  Connect Now
-                </Button>
-              </div>
-            </div>
-            
-            {/* Doctor Card 4 */}
-            <div className="p-4 border rounded-lg flex items-start">
-              <img 
-                src="https://randomuser.me/api/portraits/men/79.jpg" 
-                alt="Dr. James Wilson"
-                className="w-16 h-16 rounded-full mr-4" 
-              />
-              <div>
-                <h3 className="font-semibold">Dr. James Wilson</h3>
-                <p className="text-sm text-neutral-500">Psychiatrist</p>
-                <div className="flex items-center mt-1 text-yellow-500">
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star</span>
-                  <span className="material-icons text-sm">star_half</span>
-                  <span className="text-neutral-700 text-xs ml-1">(4.7)</span>
-                </div>
-                <Button 
-                  onClick={handleStartSession}
-                  className="mt-2 bg-primary text-white px-3 py-1 text-sm rounded-full"
-                >
-                  <span className="material-icons text-sm mr-1">video_call</span>
-                  Connect Now
-                </Button>
-              </div>
-            </div>
+            ))}
           </div>
           
           <h2 className="text-xl font-semibold mb-4">Upcoming Appointments</h2>
@@ -153,10 +215,13 @@ const TelemedicinePage = () => {
                 <Button 
                   variant="outline" 
                   className="border-primary text-primary hover:bg-primary/10"
-                  onClick={handleStartSession}
+                  onClick={() => handleStartSession(doctors[0])}
+                  disabled={isLoading}
                 >
-                  <span className="material-icons text-sm mr-1">video_call</span>
-                  Join
+                  {isLoading ? "Connecting..." : (
+                    <><span className="material-icons text-sm mr-1">video_call</span>
+                    Join</>
+                  )}
                 </Button>
                 <Button variant="outline" className="border-neutral-200 text-neutral-700">
                   <span className="material-icons text-sm mr-1">schedule</span>
@@ -248,6 +313,54 @@ const TelemedicinePage = () => {
           </Card>
         </div>
       </div>
+      
+      {/* Video Call Dialog */}
+      <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>
+        <DialogContent className="sm:max-w-[800px] h-[600px] p-0">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle>
+              {currentDoctor && `Video Call with ${currentDoctor.name}`}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {roomDetails && (
+            <div className="relative h-full">
+              <iframe
+                ref={iframeRef}
+                allow="camera; microphone; fullscreen; speaker; display-capture"
+                className="w-full h-[500px]"
+                src={roomDetails.roomUrl}
+                style={{ border: 0 }}
+                title="Video Call"
+              ></iframe>
+            </div>
+          )}
+          
+          {error && (
+            <div className="p-6 text-center">
+              <div className="text-destructive mb-4">
+                <span className="material-icons text-4xl">error_outline</span>
+                <p className="mt-2">{error}</p>
+              </div>
+              <Button 
+                onClick={() => setIsVideoDialogOpen(false)} 
+                variant="outline"
+              >
+                Close
+              </Button>
+            </div>
+          )}
+          
+          <DialogFooter className="p-4 border-t">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsVideoDialogOpen(false)}
+            >
+              End Call
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

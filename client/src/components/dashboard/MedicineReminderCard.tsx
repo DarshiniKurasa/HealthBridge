@@ -19,6 +19,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { useLocation } from "wouter";
 
 type Reminder = {
   id: string;
@@ -31,6 +32,7 @@ type Reminder = {
 };
 
 const MedicineReminderCard = () => {
+  const [, navigate] = useLocation();
   const [reminders, setReminders] = useState<Reminder[]>([
     {
       id: '1',
@@ -114,7 +116,7 @@ const MedicineReminderCard = () => {
   return (
     <Card className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
       <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-4 cursor-pointer" onClick={() => navigate('/reminders')}>
           <div>
             <h3 className="text-lg font-semibold text-neutral-900">Medication Reminders</h3>
             <p className="text-neutral-600 text-sm">Never miss your medicine or vaccine appointments</p>
@@ -201,6 +203,7 @@ const MedicineReminderCard = () => {
         </div>
         <Button 
           className="w-full bg-green-600 text-white hover:bg-green-600/90 transition-colors"
+          onClick={() => navigate('/reminders')}
         >
           <span className="material-icons text-sm mr-2">calendar_month</span>
           View Full Schedule

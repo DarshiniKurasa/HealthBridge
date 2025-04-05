@@ -7,6 +7,8 @@ import Home from "@/pages/Home";
 import TelemedicinePage from "@/pages/TelemedicinePage";
 import SymptomCheckerPage from "@/pages/SymptomCheckerPage";
 import MentalHealthPage from "@/pages/MentalHealthPage";
+import HealthcareLocatorPage from "@/pages/HealthcareLocatorPage";
+import MedicationReminderPage from "@/pages/MedicationReminderPage";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -17,8 +19,8 @@ function Router() {
       <Route path="/telemedicine" component={TelemedicinePage} />
       <Route path="/symptom-checker" component={SymptomCheckerPage} />
       <Route path="/mental-health" component={MentalHealthPage} />
-      <Route path="/reminders" component={() => <Home />} /> {/* Temporarily point to Home */}
-      <Route path="/locator" component={() => <Home />} /> {/* Temporarily point to Home */}
+      <Route path="/reminders" component={MedicationReminderPage} />
+      <Route path="/locator" component={HealthcareLocatorPage} />
       <Route path="/emergency" component={() => <Home />} /> {/* Temporarily point to Home */}
       <Route path="/blog" component={() => <Home />} /> {/* Temporarily point to Home */}
       <Route path="/videos" component={() => <Home />} /> {/* Temporarily point to Home */}
